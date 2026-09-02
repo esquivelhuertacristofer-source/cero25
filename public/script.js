@@ -99,13 +99,25 @@ window.initRingerUI = function () {
   });
   var dots = $$('button', dotsEl);
 
+  /* Blindaje: con 0 o 1 destacados no hay carrusel que animar.
+     Sin esto, posOf(1) reventaba y se caía TODO el JS de la portada
+     (buscador, menú, rails y boletín incluidos). */
+  if (slides.length < 2) {
+    if (prev) prev.style.display = 'none';
+    if (next) next.style.display = 'none';
+    if (dotsEl) dotsEl.style.display = 'none';
+    index = 0;
+  }
+
   // scrollLeft que deja la slide i centrada (scroll-snap-align: center)
   function posOf(i) {
     var s = slides[i];
+    if (!s) return 0;
     return (s.offsetLeft - track.offsetLeft) - (track.clientWidth - s.offsetWidth) / 2;
   }
 
   function go(i) {
+    if (!slides.length) return;
     index = Math.max(0, Math.min(slides.length - 1, i));
     track.scrollTo({ left: posOf(index), behavior: 'smooth' });
     sync();
@@ -145,7 +157,7 @@ window.initRingerUI = function () {
   dragScroll(track);
 
   function tick() { go(index >= slides.length - 1 ? 0 : index + 1); }
-  function start() { if (!timer) timer = setInterval(tick, AUTOPLAY_MS); }
+  function start() { if (!timer && slides.length > 1) timer = setInterval(tick, AUTOPLAY_MS); }
   function stop()  { clearInterval(timer); timer = null; }
   function restart() { stop(); start(); }
 

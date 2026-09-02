@@ -608,17 +608,28 @@
       function guardar(irAPreview) {
         var nuevo = recogerCampos();
         if (!nuevo.titulo) { toast('El título es obligatorio'); return; }
+        var btn = $('#eGuardar');
+        if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
         S.guardarArticulo(nuevo).then(function (guardado) {
           try { localStorage.removeItem(claveAutosave); } catch (er) {}
           if (irAPreview) {
             window.open('../articulo.html?slug=' + encodeURIComponent(guardado.slug), '_blank');
-            a = guardado; /* seguir editando el mismo */
+            a = guardado;
             location.hash = '#/editor/' + guardado.id;
           } else {
             var prog = nuevo.estado === 'publicado' && new Date(nuevo.fecha).getTime() > Date.now();
             toast(prog ? 'Programado ✓' : (nuevo.estado === 'publicado' ? 'Publicado ✓' : 'Guardado como borrador'));
             location.hash = '#/articulos';
           }
+        }).catch(function (err) {
+          /* nunca decir "publicado" si el guardado falló */
+          console.error('CERO25 guardar:', err);
+          var msg = (err && (err.message || err.hint)) || 'Error desconocido';
+          alert('No se pudo guardar el artículo.\n\n' + msg +
+                '\n\nTus cambios siguen en pantalla: corrige e inténtalo de nuevo. ' +
+                'El respaldo automático también los conserva.');
+        }).then(function () {
+          if (btn) { btn.disabled = false; btn.textContent = 'Guardar'; }
         });
       }
       $('#eGuardar').addEventListener('click', function () { guardar(false); });

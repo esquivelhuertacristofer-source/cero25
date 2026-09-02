@@ -234,12 +234,23 @@
     /* --- escritura (admin) --- */
     guardarArticulo: function (a) {
       if (!a.id) a.id = 'n' + Date.now().toString(36);
-      if (!a.slug) a.slug = a.titulo.toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
       if (!a.fecha) a.fecha = new Date().toISOString();
       if (a.vistas == null) a.vistas = 0;
-      return driver.upsert('articulos', a);
+
+      var base = (a.slug || a.titulo || 'articulo').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'articulo';
+
+      /* el slug es \u00fanico en la base: si ya existe en OTRO art\u00edculo se numera.
+         Sin esto, dos notas con el mismo t\u00edtulo hac\u00edan fallar el guardado. */
+      return driver.getAll('articulos').then(function (arts) {
+        var tomados = {};
+        arts.forEach(function (x) { if (x.id !== a.id && x.slug) tomados[x.slug] = true; });
+        var slug = base, n = 2;
+        while (tomados[slug]) { slug = base + '-' + n; n++; }
+        a.slug = slug;
+        return driver.upsert('articulos', a);
+      });
     },
     borrarArticulo: function (id) { return driver.remove('articulos', id); },
     guardarAutor: function (a) {

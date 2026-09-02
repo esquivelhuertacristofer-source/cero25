@@ -219,10 +219,31 @@
   }
 
   /* ---------- arranque ---------- */
+  /* Portada sin nada publicado: mensaje honesto en vez de página en blanco */
+  function sitioVacio() {
+    var main = document.getElementById('main');
+    if (!main) return;
+    main.innerHTML =
+      '<section class="rail-sec"><div style="max-width:560px;margin:0 auto;' +
+      'padding:clamp(40px,8vw,90px) var(--pad);text-align:center">' +
+      '<svg viewBox="0 0 24 24" style="width:56px;height:56px;stroke:#ff0a3c;stroke-width:2;' +
+      'fill:none;stroke-linecap:round;stroke-linejoin:round;margin-bottom:18px">' +
+      '<circle cx="12" cy="12" r="9"></circle><path d="M12 12l2.6-3.4"></path>' +
+      '<path d="M12 12l2.4 4.6"></path></svg>' +
+      '<h2 style="font-size:26px;font-weight:800;letter-spacing:-.025em;margin-bottom:10px">' +
+      'Todavía no hay nada publicado</h2>' +
+      '<p style="color:var(--ink-2);margin-bottom:22px">En cuanto la redacción publique su ' +
+      'primer artículo aparecerá aquí.</p>' +
+      '<a class="btn" href="admin/">Ir al panel</a>' +
+      '</div></section>';
+    if (window.initRingerUI) window.initRingerUI();
+  }
+
   Promise.all([S.categorias(), S.autores(), S.portadaResuelta()])
     .then(function (r) {
       CATS = r[0]; AUTS = r[1];
       var p = r[2];
+      if (!p.hero.length && !p.ultimo.length && !p.shorts.length) { sitioVacio(); return; }
       renderPills();
       renderHero(p.hero);
       renderUltimo(p.ultimo, p.videosLista[0] || null);
@@ -240,6 +261,19 @@
       if (window.initRingerUI) window.initRingerUI();
     })
     .catch(function (e) {
+      /* si algo revienta (base caída, datos corruptos) el lector merece
+         una explicación, no una página en blanco */
       console.error('CERO25 render:', e);
+      var main = document.getElementById('main');
+      if (!main) return;
+      main.innerHTML =
+        '<section class="rail-sec"><div style="max-width:520px;margin:0 auto;' +
+        'padding:clamp(40px,8vw,90px) var(--pad);text-align:center">' +
+        '<h2 style="font-size:24px;font-weight:800;letter-spacing:-.025em;margin-bottom:10px">' +
+        'No pudimos cargar el contenido</h2>' +
+        '<p style="color:var(--ink-2);margin-bottom:22px">Puede ser un problema temporal de ' +
+        'conexión. Vuelve a intentarlo en unos segundos.</p>' +
+        '<button class="btn" onclick="location.reload()">Reintentar</button>' +
+        '</div></section>';
     });
 })();

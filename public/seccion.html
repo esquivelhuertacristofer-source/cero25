@@ -92,14 +92,19 @@
       }).join('');
 
     var catObj = cats.find(function (c) { return c.slug === cat; });
-    var titulo = q ? 'Resultados para “' + esc(q) + '”'
+    /* textContent ya es seguro: no se escapa dos veces (mostraba &lt;b&gt; literal) */
+    var titulo = q ? 'Resultados para “' + q + '”'
       : tipo === 'video' ? 'Vídeos'
       : tipo === 'short' ? 'Shorts'
       : catObj ? catObj.nombre
       : 'Archivo';
-    document.getElementById('secTitulo').textContent = titulo.replace(/&[^;]+;/g, function (m) { return m; });
+    document.getElementById('secTitulo').textContent = titulo;
     document.getElementById('secEyebrow').textContent = q ? 'Búsqueda' : (tipo ? 'Formato' : (catObj ? 'Sección' : 'Todo CERO25'));
     document.title = 'CERO25 — ' + (q ? 'Búsqueda' : titulo);
+    /* imágenes rotas: se ocultan y queda el fondo, sin hueco blanco */
+    document.addEventListener('error', function (e) {
+      if (e.target && e.target.tagName === 'IMG') e.target.style.visibility = 'hidden';
+    }, true);
 
     return S.articulos({ categoria: cat || undefined, tipo: tipo || undefined, q: q || undefined })
       .then(function (arts) {
