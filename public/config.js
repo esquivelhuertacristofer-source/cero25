@@ -1,13 +1,10 @@
 /**
  * CERO25 — CONFIGURACIÓN
- * Modo demo: deja las claves vacías → el sitio y el admin funcionan con
- * datos locales (localStorage) y login de demostración.
- *
- * Producción: pega aquí la URL y la anon key de tu proyecto Supabase,
- * ejecuta supabase/schema.sql en el SQL Editor, y el driver real se
- * activa solo. Nada más que tocar.
+ * La anon key es pública por diseño (viaja al navegador de cada visitante);
+ * la seguridad real la imponen las políticas RLS de supabase/schema.sql.
+ * Las claves secretas (service_role) NUNCA van aquí ni al repositorio.
  */
 window.CERO25_CONFIG = {
-  SUPABASE_URL: "",     // p. ej. "https://xxxx.supabase.co"
-  SUPABASE_ANON_KEY: "" // la anon/public key del proyecto
+  SUPABASE_URL: "https://tstzxdoyuqehpvbbvchh.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzdHp4ZG95dXFlaHB2YmJ2Y2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNTkxMjgsImV4cCI6MjEwMzkzNTEyOH0.XcUWstl5VbRqx9033tiV8H9-ZWDhX_LgZyAOV5mmxbA"
 };
