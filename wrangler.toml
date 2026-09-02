@@ -1,0 +1,10 @@
+# CERO25 — despliegue en Cloudflare Workers (assets estáticos)
+# Comandos:  npx wrangler@latest login   →   npx wrangler@latest deploy
+
+name = "cero25"
+compatibility_date = "2026-09-02"
+
+[assets]
+directory = "./public"
+# usa nuestro 404.html de marca para rutas inexistentes
+not_found_handling = "404-page"

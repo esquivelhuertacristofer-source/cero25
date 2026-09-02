@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CERO25 — Artículo</title>
+<meta name="description" content="Artículo de CERO25." id="metaDesc">
+<meta name="theme-color" content="#ff0a3c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='%23ff0a3c' stroke-width='2.6'/%3E%3Cpath d='M12 12l2.6-3.4M12 12l2.4 4.6' stroke='%23ff0a3c' stroke-width='2.6' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="hdr" id="hdr">
+  <div class="hdr-in">
+    <a class="logo" href="index.html" aria-label="CERO25 — inicio">
+      <svg class="logo-clock" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 12l2.6-3.4"></path>
+        <path d="M12 12l2.4 4.6"></path>
+      </svg>
+      <span class="logo-word">CERO<span class="n25">25</span></span>
+    </a>
+    <form class="search" role="search" action="seccion.html" method="get">
+      <svg class="search-ico" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path>
+      </svg>
+      <input name="q" type="search" aria-label="Descubre lo que sea" autocomplete="off">
+      <span class="search-ph">Descubre <b>lo que sea</b></span>
+    </form>
+    <div class="hdr-right">
+      <nav class="hdr-links" aria-label="Medios">
+        <a href="seccion.html?tipo=video" class="hdr-link">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="3.5"></rect><path d="M10.4 9.3v5.4l4.4-2.7z" fill="currentColor" stroke="none"></path></svg>
+          <span>Vídeos</span>
+        </a>
+        <a href="seccion.html?cat=podcast" class="hdr-link">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0116 0v2"></path><rect x="2.6" y="13.4" width="4.6" height="7" rx="2.3"></rect><rect x="16.8" y="13.4" width="4.6" height="7" rx="2.3"></rect></svg>
+          <span>Pódcast</span>
+        </a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main id="artMain" class="art-wrap">
+  <p class="sec-vacio">Cargando…</p>
+</main>
+
+<footer class="ftr">
+  <div class="ftr-legal">
+    <span>© 2026 CERO25</span>
+    <span class="ftr-legal-links"><a href="index.html">Portada</a><a href="seccion.html">Archivo</a><a href="admin/">Admin</a></span>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="config.js"></script>
+<script src="store.js"></script>
+<script src="supabase/driver-supabase.js"></script>
+<script>
+(function () {
+  'use strict';
+  var S = window.CeroStore;
+  var slug = new URLSearchParams(location.search).get('slug');
+  var main = document.getElementById('artMain');
+
+  function esc(t) {
+    return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  Promise.all([S.porSlug(slug), S.categorias(), S.autores()]).then(function (r) {
+    var a = r[0], cats = r[1], auts = r[2];
+    if (!a) {
+      main.innerHTML = '<p class="sec-vacio">No encontramos ese artículo. <a href="index.html" style="color:#ff0a3c;font-weight:700">Volver a la portada</a></p>';
+      return;
+    }
+    var cat = cats.find(function (c) { return c.slug === a.categoria; });
+    document.title = 'CERO25 — ' + a.titulo;
+
+    /* borrador o programado: visible solo como vista previa, con aviso */
+    var esBorrador = a.estado !== 'publicado';
+    var esProgramado = a.estado === 'publicado' && new Date(a.fecha).getTime() > Date.now();
+    var aviso = '';
+    if (esBorrador || esProgramado) {
+      aviso = '<div style="background:#ff0a3c;color:#fff;font-weight:800;font-size:13px;' +
+        'letter-spacing:.05em;text-transform:uppercase;padding:10px 16px;border-radius:10px;' +
+        'margin-bottom:20px;display:inline-block">' +
+        (esBorrador ? 'Borrador — vista previa (no visible en el sitio)' :
+         'Programado — se publica ' + S.tiempoRelativo(a.fecha).toLowerCase().replace('hace', 'en')) +
+        '</div>';
+    } else {
+      /* solo las visitas reales cuentan para "más leídos" */
+      S.registrarVista(a.id);
+    }
+
+    /* SEO dinámico: descripción + canónica + datos estructurados */
+    var md = document.getElementById('metaDesc');
+    if (md && a.extracto) md.setAttribute('content', a.extracto);
+    var canon = document.createElement('link');
+    canon.rel = 'canonical';
+    canon.href = 'https://cero25.com.mx/articulo.html?slug=' + encodeURIComponent(a.slug);
+    document.head.appendChild(canon);
+    var ld = document.createElement('script');
+    ld.type = 'application/ld+json';
+    ld.textContent = JSON.stringify({
+      '@context': 'https://schema.org', '@type': 'NewsArticle',
+      headline: a.titulo, description: a.extracto || '',
+      datePublished: a.fecha, inLanguage: 'es',
+      articleSection: cat ? cat.nombre : a.categoria,
+      author: { '@type': 'Person', name: S.autorNombre(auts, a.autor) },
+      publisher: { '@type': 'Organization', name: 'CERO25' },
+      image: a.img ? [a.img] : undefined
+    });
+    document.head.appendChild(ld);
+
+    var media = a.img
+      ? '<img src="' + esc(a.img) + '" alt="' + esc(a.titulo) + '">'
+      : '<div class="g-art ' + esc(a.art || 'g8') + '" data-glyph="' + esc(a.glyph || '') + '"></div>';
+
+    var notaVideo = (a.tipo === 'video' || a.tipo === 'short')
+      ? '<div class="art-video-note">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M10 8.5v7l6-3.5z" fill="currentColor" stroke="none"></path></svg>' +
+        '<span>' + (a.tipo === 'short' ? 'Short' : 'Vídeo') + ' · ' + esc(a.duracion || '') + ' — el reproductor se conecta en producción.</span></div>'
+      : '';
+
+    /* cuerpo enriquecido (markdown ligero):
+       "## " subtítulo · "> " cita · "!img:URL|pie" figura · "!yt:ID" vídeo
+       inline: **negrita** · [texto](url) */
+    function urlSegura(u) {
+      return /^(https?:\/\/|assets\/|data:image\/|(articulo|seccion)\.html)/.test(u) ? u : '#';
+    }
+    function inline(t) {
+      t = esc(t);
+      t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (m, txt, u) {
+        return '<a href="' + urlSegura(u) + '" target="_blank" rel="noopener">' + txt + '</a>';
+      });
+      return t;
+    }
+    function bloque(p) {
+      if (p.indexOf('## ') === 0) return '<h2>' + inline(p.slice(3)) + '</h2>';
+      if (p.indexOf('> ') === 0) return '<blockquote>' + inline(p.slice(2)) + '</blockquote>';
+      if (p.indexOf('!img:') === 0) {
+        var partes = p.slice(5).split('|');
+        return '<figure><img src="' + urlSegura(partes[0].trim()) + '" alt="' + esc(partes[1] || '') + '" loading="lazy">' +
+          (partes[1] ? '<figcaption>' + esc(partes[1]) + '</figcaption>' : '') + '</figure>';
+      }
+      if (p.indexOf('!yt:') === 0) {
+        var vid = p.slice(4).trim();
+        if (/^[a-zA-Z0-9_-]{6,15}$/.test(vid)) {
+          return '<div class="art-embed"><iframe src="https://www.youtube-nocookie.com/embed/' + vid +
+            '" title="Vídeo" loading="lazy" allowfullscreen></iframe></div>';
+        }
+        return '';
+      }
+      return '<p>' + inline(p) + '</p>';
+    }
+    var cuerpo = (a.cuerpo && a.cuerpo.length)
+      ? a.cuerpo.map(bloque).join('')
+      : '<p>' + esc(a.extracto || '') + '</p>';
+
+    main.innerHTML =
+      aviso +
+      '<a class="art-kicker" href="seccion.html?cat=' + esc(a.categoria) + '">' + esc(cat ? cat.nombre : a.categoria) + '</a>' +
+      '<h1 class="art-title">' + esc(a.titulo) + '</h1>' +
+      '<div class="art-meta"><span class="avatar avatar-r" aria-hidden="true">25</span>' +
+      '<span>Por <b>' + esc(S.autorNombre(auts, a.autor)) + '</b> · ' + S.tiempoRelativo(a.fecha) + ' · ' + S.minutosLectura(a) + '</span></div>' +
+      '<div class="art-hero">' + media + '</div>' +
+      (a.credito ? '<p class="art-credito">Foto: ' + esc(a.credito) + '</p>' : '<p class="art-credito"></p>') +
+      notaVideo +
+      '<div class="art-cuerpo">' + cuerpo + '</div>' +
+      '<div class="art-rel"><h2>Sigue leyendo</h2><div class="art-rel-grid" id="rel"></div></div>';
+
+    S.relacionados(a, 3).then(function (rel) {
+      document.getElementById('rel').innerHTML = rel.map(function (x) {
+        var m = x.img
+          ? '<img src="' + esc(x.img) + '" alt="" loading="lazy">'
+          : '<div class="g-art ' + esc(x.art || 'g8') + ' g-1610" data-glyph="' + esc(x.glyph || '') + '"></div>';
+        return '<a class="study-card" href="articulo.html?slug=' + esc(x.slug) + '">' + m +
+          '<div class="sc-txt"><span class="tag">' + esc(cat ? cat.nombre : '') + '</span>' +
+          '<h3>' + esc(x.titulo) + '</h3></div></a>';
+      }).join('') || '<p class="sec-vacio">Nada más en esta sección todavía.</p>';
+    });
+  });
+})();
+</script>
+</body>
+</html>

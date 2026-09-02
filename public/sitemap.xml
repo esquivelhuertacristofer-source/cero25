@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://cero25.com.mx/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://cero25.com.mx/seccion.html</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://cero25.com.mx/seccion.html?cat=videojuegos</loc><changefreq>daily</changefreq></url>
+  <url><loc>https://cero25.com.mx/seccion.html?cat=cine</loc><changefreq>daily</changefreq></url>
+  <url><loc>https://cero25.com.mx/seccion.html?cat=series</loc><changefreq>daily</changefreq></url>
+  <url><loc>https://cero25.com.mx/seccion.html?cat=anime</loc><changefreq>daily</changefreq></url>
+  <url><loc>https://cero25.com.mx/seccion.html?cat=musica</loc><changefreq>daily</changefreq></url>
+  <url><loc>https://cero25.com.mx/seccion.html?cat=esports</loc><changefreq>daily</changefreq></url>
+  <url><loc>https://cero25.com.mx/seccion.html?cat=retro</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://cero25.com.mx/seccion.html?cat=hardware</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://cero25.com.mx/seccion.html?cat=indies</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://cero25.com.mx/seccion.html?cat=cultura</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://cero25.com.mx/seccion.html?cat=tecnologia</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://cero25.com.mx/seccion.html?cat=podcast</loc><changefreq>weekly</changefreq></url>
+</urlset>

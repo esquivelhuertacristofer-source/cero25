@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CERO25 — Videojuegos, cine y cultura digital</title>
+<meta name="description" content="CERO25 — videojuegos, cine, series, anime, música, esports y cultura digital en español. Análisis, guías, vídeos y pódcast.">
+<meta name="theme-color" content="#ff0a3c">
+<link rel="manifest" href="manifest.json">
+<link rel="canonical" href="https://cero25.com.mx/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CERO25">
+<meta property="og:url" content="https://cero25.com.mx/">
+<meta property="og:title" content="CERO25 — Videojuegos, cine y cultura digital">
+<meta property="og:description" content="Análisis, guías, vídeos y pódcast de videojuegos, cine y cultura digital, en español.">
+<meta property="og:image" content="https://cero25.com.mx/assets/videojuegos.jpg">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CERO25 — Videojuegos, cine y cultura digital">
+<meta name="twitter:description" content="Análisis, guías, vídeos y pódcast de cultura digital en español.">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+ {"@type":"Organization","name":"CERO25","url":"https://cero25.com.mx/","logo":"https://cero25.com.mx/assets/icono-512.png"},
+ {"@type":"WebSite","name":"CERO25","url":"https://cero25.com.mx/",
+  "potentialAction":{"@type":"SearchAction",
+   "target":{"@type":"EntryPoint","urlTemplate":"https://cero25.com.mx/seccion.html?q={search_term_string}"},
+   "query-input":"required name=search_term_string"}}]}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='%23ff0a3c' stroke-width='2.6'/%3E%3Cpath d='M12 12l2.6-3.4M12 12l2.4 4.6' stroke='%23ff0a3c' stroke-width='2.6' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<a class="skip" href="#main">Saltar al contenido</a>
+
+<!-- ============ HEADER ============ -->
+<header class="hdr" id="hdr">
+  <div class="hdr-in">
+    <a class="logo" href="index.html" aria-label="CERO25 — inicio">
+      <svg class="logo-clock" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 12l2.6-3.4"></path>
+        <path d="M12 12l2.4 4.6"></path>
+      </svg>
+      <span class="logo-word">CERO<span class="n25">25</span></span>
+    </a>
+
+    <form class="search" role="search" action="seccion.html" method="get">
+      <svg class="search-ico" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path>
+      </svg>
+      <input id="search-input" name="q" type="search" aria-label="Descubre lo que sea" autocomplete="off">
+      <span class="search-ph" id="search-ph">Descubre <b>lo que sea</b></span>
+    </form>
+
+    <div class="hdr-right">
+    <nav class="hdr-links" aria-label="Medios">
+      <a href="seccion.html?tipo=video" class="hdr-link">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="3.5"></rect><path d="M10.4 9.3v5.4l4.4-2.7z" fill="currentColor" stroke="none"></path></svg>
+        <span>Vídeos</span>
+      </a>
+      <a href="seccion.html?cat=podcast" class="hdr-link">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0116 0v2"></path><rect x="2.6" y="13.4" width="4.6" height="7" rx="2.3"></rect><rect x="16.8" y="13.4" width="4.6" height="7" rx="2.3"></rect></svg>
+        <span>Pódcast</span>
+      </a>
+    </nav>
+
+    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu">
+      <span></span><span></span><span></span>
+    </button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ CATEGORY PILLS (render) ============ -->
+<div class="pills-wrap">
+  <div class="pills" id="pills"></div>
+</div>
+
+<main id="main">
+
+<!-- ============ HERO CAROUSEL (render) ============ -->
+<section class="hero" aria-roledescription="carousel" aria-label="Destacados">
+  <div class="hero-track" id="heroTrack"></div>
+  <button class="hero-nav prev" id="heroPrev" aria-label="Anterior">
+    <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"></path></svg>
+  </button>
+  <button class="hero-nav next" id="heroNext" aria-label="Siguiente">
+    <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg>
+  </button>
+  <div class="hero-dots" id="heroDots" role="tablist" aria-label="Elegir destacado"></div>
+</section>
+
+<!-- ============ LO ÚLTIMO (auto) ============ -->
+<section class="rail-sec">
+  <div class="rail-head">
+    <h2 class="rail-title">Lo último</h2>
+    <button class="rail-arrow" data-rail="latest" aria-label="Ver más de Lo último">
+      <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg>
+    </button>
+  </div>
+  <div class="rail" id="latest"></div>
+</section>
+
+<!-- ============ BANDA (curado) ============ -->
+<section class="band" id="banda"></section>
+
+<!-- ============ LECTURAS DESTACADAS (mixto) ============ -->
+<section class="rail-sec">
+  <div class="noteworthy" id="noteworthy"></div>
+</section>
+
+<!-- ============ VÍDEOS (auto + curado) ============ -->
+<div class="sticker-head"><span class="sticker">Vídeos</span></div>
+<section class="rail-sec" style="padding-top:0">
+  <div class="videos-mega" id="videosMega"></div>
+</section>
+
+<!-- ============ RAIL TEMÁTICO 1 (curado) ============ -->
+<section class="rail-sec">
+  <div class="rail-head">
+    <h2 class="rail-title" id="rail1Titulo"></h2>
+    <button class="rail-arrow" data-rail="study" aria-label="Ver más">
+      <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg>
+    </button>
+  </div>
+  <div class="rail" id="study" style="grid-auto-columns:minmax(230px,1fr)"></div>
+</section>
+
+<!-- ============ FEATURE XL 1 (curado) ============ -->
+<section class="rail-sec" id="feature1"></section>
+
+<!-- ============ FILA MINI (curado) ============ -->
+<section class="rail-sec" style="padding-top:0">
+  <div class="mini-row" id="miniRow"></div>
+</section>
+
+<!-- ============ FEATURE XL 2 (curado) ============ -->
+<section class="rail-sec" style="padding-top:0" id="feature2"></section>
+
+<!-- ============ RAIL TEMÁTICO 2 (curado) ============ -->
+<section class="rail-sec">
+  <div class="rail-head">
+    <h2 class="rail-title" id="rail2Titulo"></h2>
+    <button class="rail-arrow" data-rail="lakers" aria-label="Ver más">
+      <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg>
+    </button>
+  </div>
+  <div class="rail" id="lakers" style="grid-auto-columns:minmax(230px,1fr)"></div>
+</section>
+
+<!-- ============ SHORTS (auto) ============ -->
+<div class="sticker-head"><span class="sticker">Shorts</span></div>
+<section class="rail-sec" style="padding-top:0">
+  <div class="rail rail-shorts" id="shorts"></div>
+</section>
+
+<!-- ============ PÓDCAST (programas) ============ -->
+<div class="sticker-head"><span class="sticker">Pódcast</span></div>
+<section class="rail-sec" style="padding-top:0">
+  <div class="rail rail-sq" id="pods"></div>
+</section>
+
+<!-- ============ GRANDES LECTURAS (auto: longform) ============ -->
+<section class="rail-sec">
+  <div class="rail-head">
+    <h2 class="rail-title">Grandes lecturas</h2>
+    <button class="rail-arrow" data-rail="reads" aria-label="Ver más">
+      <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg>
+    </button>
+  </div>
+  <div class="rail" id="reads" style="grid-auto-columns:minmax(230px,1fr)"></div>
+</section>
+
+<!-- ============ BOLETÍN + ARCHIVO ============ -->
+<section class="rail-sec" id="boletin">
+  <div class="closing-grid">
+    <div class="close-card close-nl">
+      <svg class="close-ill" viewBox="0 0 48 40" aria-hidden="true">
+        <rect x="3" y="6" width="42" height="28" rx="4"></rect>
+        <path d="M5 9l19 14L43 9"></path>
+      </svg>
+      <h2>El Boletín</h2>
+      <p>Lo mejor de la semana, directo a tu correo.</p>
+      <form class="nl-form" id="nlForm">
+        <input type="email" placeholder="Tu correo" aria-label="Tu correo" required>
+        <button type="submit" aria-label="Suscribirme">→</button>
+      </form>
+      <p class="nl-msg" id="nlMsg" hidden></p>
+    </div>
+    <div class="close-card close-ar">
+      <svg class="close-ill" viewBox="0 0 40 44" aria-hidden="true">
+        <rect x="6" y="3" width="30" height="38" rx="4"></rect>
+        <path d="M13 3v38"></path>
+        <path d="M20 12h10M20 19h10"></path>
+      </svg>
+      <h2>Archivo</h2>
+      <p>Todo lo que hemos publicado, en un solo lugar.</p>
+      <a class="btn" href="seccion.html">Llévame allí</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="ftr">
+  <div class="ftr-in">
+    <a class="logo logo-ftr" href="index.html">
+      <svg class="logo-clock" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 12l2.6-3.4"></path>
+        <path d="M12 12l2.4 4.6"></path>
+      </svg>
+      <span class="logo-word">CERO<span class="n25">25</span></span>
+    </a>
+    <nav class="ftr-cols" aria-label="Pie de página">
+      <div><h4>Secciones</h4>
+        <a href="seccion.html?cat=videojuegos">Videojuegos</a>
+        <a href="seccion.html?cat=cine">Cine</a>
+        <a href="seccion.html?cat=series">Series</a>
+        <a href="seccion.html?cat=anime">Anime</a>
+        <a href="seccion.html?cat=esports">Esports</a>
+        <a href="seccion.html?cat=musica">Música</a>
+      </div>
+      <div><h4>Formatos</h4>
+        <a href="seccion.html?tipo=video">Vídeos</a>
+        <a href="seccion.html?tipo=short">Shorts</a>
+        <a href="seccion.html?cat=podcast">Pódcast</a>
+        <a href="seccion.html?cat=retro">Retro</a>
+      </div>
+      <div><h4>Más</h4>
+        <a href="seccion.html">Archivo</a>
+        <a href="#boletin">El Boletín</a>
+        <a href="admin/">Admin</a>
+      </div>
+    </nav>
+    <div class="ftr-social" aria-label="Redes">
+      <a href="#" aria-label="X">𝕏</a><a href="#" aria-label="Instagram">◎</a><a href="#" aria-label="TikTok">♪</a><a href="#" aria-label="YouTube">▶</a>
+    </div>
+  </div>
+  <div class="ftr-legal">
+    <span>© 2026 CERO25</span>
+    <span class="ftr-legal-links"><a href="#">Privacidad</a><a href="#">Términos</a><a href="#">Cookies</a></span>
+  </div>
+</footer>
+
+<!-- ============ MENU OVERLAY ============ -->
+<div class="menu" id="menu" hidden>
+  <div class="menu-in">
+    <div class="menu-grid">
+      <div><h4>Juegos</h4>
+        <a href="seccion.html?cat=videojuegos">Videojuegos</a>
+        <a href="seccion.html?cat=esports">Esports</a>
+        <a href="seccion.html?cat=indies">Indies</a>
+        <a href="seccion.html?cat=retro">Retro</a>
+        <a href="seccion.html?cat=hardware">Hardware</a>
+      </div>
+      <div><h4>Cultura</h4>
+        <a href="seccion.html?cat=cine">Cine</a>
+        <a href="seccion.html?cat=series">Series</a>
+        <a href="seccion.html?cat=anime">Anime</a>
+        <a href="seccion.html?cat=musica">Música</a>
+        <a href="seccion.html?cat=cultura">Cultura</a>
+        <a href="seccion.html?cat=tecnologia">Tecnología</a>
+      </div>
+      <div><h4>CERO25</h4>
+        <a href="seccion.html?tipo=video">Vídeos</a>
+        <a href="seccion.html?tipo=short">Shorts</a>
+        <a href="seccion.html?cat=podcast">Pódcast</a>
+        <a href="#boletin">El Boletín</a>
+        <a href="seccion.html">Archivo</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="config.js"></script>
+<script src="store.js"></script>
+<script src="supabase/driver-supabase.js"></script>
+<script src="script.js"></script>
+<script src="render.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js'); });
+}
+</script>
+</body>
+</html>

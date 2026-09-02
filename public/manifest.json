@@ -1,0 +1,14 @@
+{
+  "name": "CERO25",
+  "short_name": "CERO25",
+  "description": "Videojuegos, cine y cultura digital en español.",
+  "lang": "es",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0e0e12",
+  "theme_color": "#ff0a3c",
+  "icons": [
+    { "src": "assets/icono-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icono-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CERO25 — Sección</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='none' stroke='%23ff0a3c' stroke-width='2.6'/%3E%3Cpath d='M12 12l2.6-3.4M12 12l2.4 4.6' stroke='%23ff0a3c' stroke-width='2.6' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="hdr" id="hdr">
+  <div class="hdr-in">
+    <a class="logo" href="index.html" aria-label="CERO25 — inicio">
+      <svg class="logo-clock" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 12l2.6-3.4"></path>
+        <path d="M12 12l2.4 4.6"></path>
+      </svg>
+      <span class="logo-word">CERO<span class="n25">25</span></span>
+    </a>
+    <form class="search" role="search" action="seccion.html" method="get">
+      <svg class="search-ico" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path>
+      </svg>
+      <input name="q" type="search" aria-label="Descubre lo que sea" autocomplete="off">
+      <span class="search-ph">Descubre <b>lo que sea</b></span>
+    </form>
+    <div class="hdr-right">
+      <nav class="hdr-links" aria-label="Medios">
+        <a href="seccion.html?tipo=video" class="hdr-link">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="3.5"></rect><path d="M10.4 9.3v5.4l4.4-2.7z" fill="currentColor" stroke="none"></path></svg>
+          <span>Vídeos</span>
+        </a>
+        <a href="seccion.html?cat=podcast" class="hdr-link">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0116 0v2"></path><rect x="2.6" y="13.4" width="4.6" height="7" rx="2.3"></rect><rect x="16.8" y="13.4" width="4.6" height="7" rx="2.3"></rect></svg>
+          <span>Pódcast</span>
+        </a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<div class="pills-wrap">
+  <div class="pills" id="pills"></div>
+</div>
+
+<main>
+  <div class="sec-head-page">
+    <p class="sec-eyebrow" id="secEyebrow">Sección</p>
+    <h1 class="sec-title-page" id="secTitulo">…</h1>
+    <p class="sec-count" id="secCount"></p>
+  </div>
+  <div class="sec-grid" id="grid"></div>
+</main>
+
+<footer class="ftr">
+  <div class="ftr-legal">
+    <span>© 2026 CERO25</span>
+    <span class="ftr-legal-links"><a href="index.html">Portada</a><a href="seccion.html">Archivo</a><a href="admin/">Admin</a></span>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="config.js"></script>
+<script src="store.js"></script>
+<script src="supabase/driver-supabase.js"></script>
+<script>
+(function () {
+  'use strict';
+  var S = window.CeroStore;
+  var P = new URLSearchParams(location.search);
+  var cat = P.get('cat'), tipo = P.get('tipo'), q = (P.get('q') || '').trim();
+
+  function esc(t) {
+    return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  Promise.all([S.categorias(), S.autores()]).then(function (r) {
+    var cats = r[0], auts = r[1];
+
+    /* pills con la activa marcada */
+    document.getElementById('pills').innerHTML =
+      '<a class="pill' + (!cat && !tipo && !q ? ' is-on' : '') + '" href="seccion.html">Archivo</a>' +
+      cats.map(function (c) {
+        return '<a class="pill' + (c.slug === cat ? ' is-on' : '') + '" href="seccion.html?cat=' + c.slug + '">' + esc(c.nombre) + '</a>';
+      }).join('');
+
+    var catObj = cats.find(function (c) { return c.slug === cat; });
+    var titulo = q ? 'Resultados para “' + esc(q) + '”'
+      : tipo === 'video' ? 'Vídeos'
+      : tipo === 'short' ? 'Shorts'
+      : catObj ? catObj.nombre
+      : 'Archivo';
+    document.getElementById('secTitulo').textContent = titulo.replace(/&[^;]+;/g, function (m) { return m; });
+    document.getElementById('secEyebrow').textContent = q ? 'Búsqueda' : (tipo ? 'Formato' : (catObj ? 'Sección' : 'Todo CERO25'));
+    document.title = 'CERO25 — ' + (q ? 'Búsqueda' : titulo);
+
+    return S.articulos({ categoria: cat || undefined, tipo: tipo || undefined, q: q || undefined })
+      .then(function (arts) {
+        document.getElementById('secCount').textContent =
+          arts.length + (arts.length === 1 ? ' publicación' : ' publicaciones');
+        var grid = document.getElementById('grid');
+        if (!arts.length) {
+          grid.innerHTML = '<p class="sec-vacio" style="grid-column:1/-1">Nada por aquí todavía. <a href="index.html" style="color:#ff0a3c;font-weight:700">Volver a la portada</a></p>';
+          return;
+        }
+        grid.innerHTML = arts.map(function (a) {
+          var m = a.img
+            ? '<img src="' + esc(a.img) + '" alt="" loading="lazy">'
+            : '<div class="g-art ' + esc(a.art || 'g8') + ' g-1610" data-glyph="' + esc(a.glyph || '') + '"></div>';
+          var meta = a.tipo === 'video' || a.tipo === 'short'
+            ? (a.tipo === 'short' ? 'Short' : 'Vídeo') + ' · ' + esc(a.duracion || '')
+            : 'Por ' + esc(S.autorNombre(auts, a.autor));
+          var c = cats.find(function (x) { return x.slug === a.categoria; });
+          return '<a class="study-card" href="articulo.html?slug=' + esc(a.slug) + '">' + m +
+            '<div class="sc-txt"><span class="tag">' + esc(c ? c.nombre : a.categoria) + '</span>' +
+            '<h3>' + esc(a.titulo) + '</h3>' +
+            '<span style="font-size:12.5px;color:#6b6b6b">' + meta + ' · ' + S.tiempoRelativo(a.fecha) + '</span>' +
+            '</div></a>';
+        }).join('');
+      });
+  });
+})();
+</script>
+</body>
+</html>
