@@ -895,6 +895,94 @@ body.no-scroll{overflow:hidden}
 .study-card .tag{color:#ff0a3c;background:rgba(255,10,60,.07)}
 .hdr-link:hover{color:#ff0a3c}
 
+/* ============================================================
+   MÓVIL — bloque final: cubre TODAS las secciones, incluidas las
+   añadidas después del responsive original. Va al final a propósito:
+   por orden de cascada gana sobre las reglas de escritorio.
+   ============================================================ */
+@media (max-width:760px){
+
+  /* --- cabecera: una sola fila que no desborda --- */
+  .hdr-in{gap:10px}
+  .hdr-in > .logo{flex:0 0 auto}
+  .hdr-in > .hdr-right{flex:0 0 auto}
+  .hdr-in > .search{flex:1 1 auto;width:auto;min-width:0;max-width:none}
+  .search:focus-within{width:auto}
+  .burger{margin-left:6px}
+
+  /* --- secciones de la 2ª fase --- */
+  .noteworthy{grid-template-columns:1fr;gap:14px}
+  .note-card{min-height:210px}
+
+  .videos-mega{margin:0 12px;padding:16px;border-radius:18px}
+  .vm-grid{grid-template-columns:1fr;gap:16px}
+  .vid-row{grid-template-columns:96px 1fr;gap:10px}
+  .vid-row img,.g-thumb{width:96px}
+  .vid-row h4{font-size:13px}
+  .vid-featured{min-height:230px}
+  .vm-banner{min-height:190px}
+  .vm-banner .card-h{font-size:19px;max-width:100%}
+
+  .feature-xl{min-height:300px;border-radius:20px}
+  .feature-xl .fx-h{font-size:23px;max-width:100%}
+  .feature-xl .g-art::after{font-size:5rem}
+
+  .mini-row{grid-template-columns:1fr;gap:10px}
+  .mini-card{grid-template-columns:1fr 84px;padding:12px}
+  .mini-card img,.g-sq{width:84px}
+  .mini-card h3{font-size:14.5px}
+
+  .sticker{font-size:23px;padding:8px 26px;box-shadow:3px 4px 0 rgba(0,0,0,.85)}
+  .rail-shorts{grid-auto-columns:minmax(150px,58vw)}
+
+  .closing-grid{grid-template-columns:1fr;gap:12px}
+  .close-card{min-height:0;padding:24px 20px}
+  .close-ill{width:46px}
+  .close-nl .nl-form{max-width:none}
+
+  /* --- página de artículo --- */
+  .art-wrap{padding-left:18px;padding-right:18px}
+  .art-cuerpo{font-size:17px;line-height:1.62}
+  .art-cuerpo p:first-child::first-letter{font-size:2.6em;padding-right:8px}
+  .art-cuerpo h2{font-size:21px}
+  .art-cuerpo blockquote{font-size:18px;padding-left:.8em}
+  .art-meta{font-size:14px;flex-wrap:wrap;gap:9px}
+  .art-hero .g-art::after{font-size:5rem}
+  .art-rel-grid{grid-template-columns:1fr}
+
+  /* --- sección / búsqueda / archivo --- */
+  .sec-grid{grid-template-columns:1fr;gap:14px}
+
+  /* --- autor --- */
+  .autor-in{gap:14px}
+  .autor-avatar{width:58px;height:58px;font-size:22px}
+
+  /* --- legales: pestañas deslizables en vez de amontonadas --- */
+  .legal-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
+    padding-bottom:16px;margin-bottom:20px}
+  .legal-tabs::-webkit-scrollbar{display:none}
+  .legal-tabs a{flex:0 0 auto}
+  .legal-cuerpo{font-size:16.5px}
+  .legal-cuerpo h2{font-size:19px}
+
+  /* --- pósters: glifos proporcionados a pantalla pequeña --- */
+  .g-art::after{font-size:3.2rem}
+  .slide-art .g-art::after{font-size:5rem}
+  .g-sq::after{font-size:1.6rem}
+}
+
+/* móviles estrechos */
+@media (max-width:400px){
+  .hdr-in{gap:8px}
+  .logo-word{font-size:18px}
+  .burger{width:42px;height:42px}
+  .vid-row{grid-template-columns:80px 1fr}
+  .vid-row img,.g-thumb{width:80px}
+  .mini-card{grid-template-columns:1fr 72px}
+  .mini-card img,.g-sq{width:72px}
+  .sticker{font-size:20px}
+}
+
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01ms !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
 }
