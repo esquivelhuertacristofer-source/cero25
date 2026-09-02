@@ -39,6 +39,10 @@
           return true;
         });
       },
+      /* el lector anónimo no puede escribir en articulos: se usa la función RPC */
+      registrarVista: function (id) {
+        return sb.rpc('registrar_vista', { art_id: id }).then(function () { return true; });
+      },
       getPortada: function () {
         return sb.from('portada').select('config').eq('id', 1).single().then(function (r) {
           if (r.error) throw r.error;

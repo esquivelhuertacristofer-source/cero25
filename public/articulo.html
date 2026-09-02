@@ -119,14 +119,29 @@
     });
     document.head.appendChild(ld);
 
-    var media = a.img
+    var portada = a.img
       ? '<img src="' + esc(a.img) + '" alt="' + esc(a.titulo) + '">'
       : '<div class="g-art ' + esc(a.art || 'g8') + '" data-glyph="' + esc(a.glyph || '') + '"></div>';
 
-    var notaVideo = (a.tipo === 'video' || a.tipo === 'short')
+    /* reproductor: si el artículo trae enlace de YouTube/Spotify/Vimeo lo embebe */
+    var media = S.detectarMedia(a.media);
+    var reproductor = '';
+    if (media) {
+      var esAudio = media.tipo === 'spotify';
+      var alto = esAudio
+        ? (media.clase === 'show' ? 232 : 152)
+        : 0; /* 0 = usa aspect-ratio 16/9 del CSS */
+      reproductor = '<div class="art-embed' + (esAudio ? ' art-embed-audio' : '') + '"' +
+        (alto ? ' style="aspect-ratio:auto;height:' + alto + 'px"' : '') + '>' +
+        '<iframe src="' + esc(media.embed) + '" title="Reproductor" loading="lazy"' +
+        ' allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; fullscreen"' +
+        ' allowfullscreen></iframe></div>';
+    }
+    var notaVideo = (!media && (a.tipo === 'video' || a.tipo === 'short'))
       ? '<div class="art-video-note">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M10 8.5v7l6-3.5z" fill="currentColor" stroke="none"></path></svg>' +
-        '<span>' + (a.tipo === 'short' ? 'Short' : 'Vídeo') + ' · ' + esc(a.duracion || '') + ' — el reproductor se conecta en producción.</span></div>'
+        '<span>' + (a.tipo === 'short' ? 'Short' : 'Vídeo') + (a.duracion ? ' · ' + esc(a.duracion) : '') +
+        ' — próximamente en nuestro canal.</span></div>'
       : '';
 
     /* cuerpo enriquecido (markdown ligero):
@@ -170,8 +185,10 @@
       '<a class="art-kicker" href="seccion.html?cat=' + esc(a.categoria) + '">' + esc(cat ? cat.nombre : a.categoria) + '</a>' +
       '<h1 class="art-title">' + esc(a.titulo) + '</h1>' +
       '<div class="art-meta"><span class="avatar avatar-r" aria-hidden="true">25</span>' +
-      '<span>Por <b>' + esc(S.autorNombre(auts, a.autor)) + '</b> · ' + S.tiempoRelativo(a.fecha) + ' · ' + S.minutosLectura(a) + '</span></div>' +
-      '<div class="art-hero">' + media + '</div>' +
+      '<span>Por <a href="autor.html?id=' + esc(a.autor || '') + '"><b>' +
+      esc(S.autorNombre(auts, a.autor)) + '</b></a> · ' + S.tiempoRelativo(a.fecha) +
+      ' · ' + S.minutosLectura(a) + '</span></div>' +
+      (reproductor ? reproductor : '<div class="art-hero">' + portada + '</div>') +
       (a.credito ? '<p class="art-credito">Foto: ' + esc(a.credito) + '</p>' : '<p class="art-credito"></p>') +
       notaVideo +
       '<div class="art-cuerpo">' + cuerpo + '</div>' +

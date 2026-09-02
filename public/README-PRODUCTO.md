@@ -71,6 +71,32 @@ Sin claves en `config.js`, todo funciona con datos locales del navegador:
 6. Migrar el seed: Admin → Ajustes → Exportar JSON, e insertar (o pedirme
    que genere el script de inserts a partir del export).
 
+## Analítica de audiencia
+
+**Cloudflare Web Analytics** — gratis, sin cookies y sin banner de consentimiento
+(no rastrea individuos). Como el sitio ya vive en Cloudflare, se activa sin tocar
+el código:
+
+1. dash.cloudflare.com → **Analytics & Logs** → **Web Analytics**
+2. **Add a site** → elegir `cero25.com.mx`
+3. Activar **Automatic Setup** (Cloudflare inyecta el medidor solo)
+
+Da: visitantes únicos, páginas más vistas, de dónde llegan (buscadores, redes,
+directo), países y dispositivos. Complementa las lecturas del panel, que miden
+artículo por artículo.
+
+## Reproductores de vídeo y audio
+
+No se alojan archivos: se pegan enlaces. En el editor, campo **Enlace de vídeo o
+audio** acepta URLs de:
+
+- **YouTube** — `youtube.com/watch?v=…`, `youtu.be/…`, Shorts y `/live/`
+- **Spotify** — episodios, programas, temas, álbumes y listas
+- **Vimeo** — `vimeo.com/…`
+
+El sistema detecta la plataforma sola y muestra el reproductor arriba del
+artículo. Los programas de la sección Pódcast también aceptan su enlace propio.
+
 ## Roles
 
 - **admin**: todo el panel.

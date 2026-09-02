@@ -74,7 +74,8 @@
       '<h3 class="card-h">' + esc(a.titulo) + '</h3>' +
       '</div></a>' +
       '<div class="card-foot">' + avatarR +
-      '<span>Por <b>' + esc(autor(a)) + '</b> <i class="dot">·</i> ' + S.minutosLectura(a) + '</span>' +
+      '<span>Por <a href="autor.html?id=' + esc(a.autor || '') + '"><b>' + esc(autor(a)) +
+      '</b></a> <i class="dot">·</i> ' + S.minutosLectura(a) + '</span>' +
       '</div></article>';
   }
 
@@ -203,8 +204,13 @@
         ? '<img src="' + esc(p.img) + '" alt="' + esc(p.nombre) + '"' +
           (p.credito ? ' title="Foto: ' + esc(p.credito) + '"' : '') + ' loading="lazy">'
         : '<div class="g-art ' + esc(p.art) + ' g-pod" data-glyph="' + esc(p.glyph) + '"></div>';
-      return '<a class="pod-color ' + esc(p.color) + '" href="seccion.html?cat=podcast">' +
-        cover + '<h3>' + esc(p.nombre) + '</h3></a>';
+      /* si el programa tiene enlace propio, abre ahí; si no, a la sección */
+      var destino = p.url
+        ? esc(p.url) + '" target="_blank" rel="noopener'
+        : 'seccion.html?cat=podcast';
+      return '<a class="pod-color ' + esc(p.color) + '" href="' + destino + '">' +
+        cover + '<h3>' + esc(p.nombre) + '</h3>' +
+        (p.host ? '<p class="pod-host">' + esc(p.host) + '</p>' : '') + '</a>';
     }).join('');
   }
 

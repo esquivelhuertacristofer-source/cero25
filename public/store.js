@@ -8,7 +8,7 @@
 (function () {
   'use strict';
 
-  var DB_KEY = 'cero25_db_v5'; /* subir versión invalida el seed viejo en navegadores */
+  var DB_KEY = 'cero25_db_v6'; /* subir versión invalida el seed viejo en navegadores */
   var SESSION_KEY = 'cero25_session_v1';
 
   /* ================= LocalDriver ================= */
@@ -253,6 +253,9 @@
 
     /* --- vistas reales: total + serie diaria (para la gráfica del panel) --- */
     registrarVista: function (id) {
+      /* en producción el driver expone su propia vía (RPC): el lector anónimo
+         no tiene permiso de escritura directa sobre la tabla */
+      if (driver.registrarVista) return driver.registrarVista(id);
       return driver.getAll('articulos').then(function (arts) {
         var a = arts.find(function (x) { return x.id === id; });
         if (!a) return null;
@@ -306,6 +309,28 @@
     login: function (e, p) { return driver.login(e, p); },
     logout: function () { return driver.logout(); },
     sesion: function () { return driver.getSession(); },
+
+    /* --- reproductores embebidos ---
+       Detecta la plataforma a partir de la URL que pegue el editor y
+       devuelve {tipo, id, embed} o null si no se reconoce. */
+    detectarMedia: function (url) {
+      if (!url) return null;
+      url = String(url).trim();
+      var m;
+      /* YouTube: watch?v= · youtu.be/ · /embed/ · /shorts/ */
+      m = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{6,15})/);
+      if (m) return { tipo: 'youtube', id: m[1],
+        embed: 'https://www.youtube-nocookie.com/embed/' + m[1] };
+      /* Spotify: episode · show · track · playlist · album */
+      m = url.match(/open\.spotify\.com\/(?:intl-[a-z]{2}\/)?(episode|show|track|playlist|album)\/([A-Za-z0-9]{10,40})/);
+      if (m) return { tipo: 'spotify', clase: m[1], id: m[2],
+        embed: 'https://open.spotify.com/embed/' + m[1] + '/' + m[2] };
+      /* Vimeo */
+      m = url.match(/vimeo\.com\/(?:video\/)?(\d{6,12})/);
+      if (m) return { tipo: 'vimeo', id: m[1],
+        embed: 'https://player.vimeo.com/video/' + m[1] };
+      return null;
+    },
 
     /* --- helpers de presentación --- */
     tiempoRelativo: tiempoRelativo,

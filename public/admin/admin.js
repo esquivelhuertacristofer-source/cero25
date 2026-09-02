@@ -240,10 +240,12 @@
   }
 
   /* ================= editor ================= */
+  var PORTADA = null;
   function vEditor(id) {
-    Promise.all([S.categorias(), S.autores(), S.articulos({ incluirBorradores: true })])
+    Promise.all([S.categorias(), S.autores(), S.articulos({ incluirBorradores: true }), S.portadaConfig()])
     .then(function (r) {
       var cats = r[0], auts = r[1];
+      PORTADA = r[3];
       var a = r[2].find(function (x) { return x.id === id || x.slug === id; }) ||
         { tipo: 'articulo', estado: 'borrador', categoria: cats[0].slug, autor: auts[0].id, cuerpo: [] };
 
@@ -271,6 +273,9 @@
         }).join('') + '</select></label>' +
         '<label class="fld"><span>Duración <span class="hint">(vídeo/short)</span></span><input id="eDur" value="' + esc(a.duracion || '') + '" placeholder="12 min · 0:58"></label>' +
         '</div>' +
+        '<label class="fld"><span>Enlace de vídeo o audio <span class="hint">(pega la URL de YouTube o Spotify)</span></span>' +
+        '<input id="eMedia" value="' + esc(a.media || '') + '" placeholder="https://www.youtube.com/watch?v=… · https://open.spotify.com/episode/…"></label>' +
+        '<p class="contador" id="cMedia"></p>' +
         '<div class="fila-2">' +
         '<label class="fld"><span>Slug <span class="hint">(URL)</span></span><input id="eSlug" value="' + esc(a.slug || '') + '" placeholder="se-genera-del-titulo"></label>' +
         '<label class="fld"><span>Fecha</span><input id="eFecha" type="datetime-local" value="' + esc(fechaLocal) + '"></label>' +
@@ -292,12 +297,16 @@
         '</div>' +
 
         '<div class="editor-aside">' +
-        '<div class="card-form"><h3>' + icono('ojo') + ' Vista previa</h3>' +
+        '<div class="card-form"><h3>' + icono('ojo') + ' Cómo se verá en portada</h3>' +
         '<div class="tarjeta-preview"><div class="tp-media" id="tpMedia"></div>' +
         '<div class="tp-txt"><span class="tp-tag" id="tpTag"></span>' +
         '<h4 class="tp-h" id="tpTitulo"></h4>' +
         '<p class="tp-meta" id="tpMeta"></p></div></div>' +
+        '<button type="button" class="btn-ghost" id="eVerCompleta" style="width:100%">' +
+        'Ver artículo completo</button>' +
         '</div>' +
+        '<div class="card-form"><h3>' + icono('rayo') + ' Dónde aparecerá</h3>' +
+        '<div id="eUbicacion"></div></div>' +
         '<div class="card-form"><h3>Imagen destacada</h3>' +
         '<div class="media-preview" id="ePreview"></div>' +
         '<p class="media-info" id="eMediaInfo"></p>' +
@@ -332,6 +341,24 @@
         $('#cTitulo').className = 'contador' + (t > 75 ? ' pasa' : '');
         $('#cExtracto').textContent = x + '/160 recomendado para SEO';
         $('#cExtracto').className = 'contador' + (x > 160 ? ' pasa' : '');
+        /* valida el enlace pegado y dice qué reproductor saldrá */
+        var mEl = $('#cMedia'), val = $('#eMedia').value.trim();
+        if (!val) { mEl.textContent = ''; mEl.className = 'contador'; }
+        else {
+          var det = S.detectarMedia(val);
+          if (det) {
+            var nombre = det.tipo === 'youtube' ? 'YouTube'
+              : det.tipo === 'vimeo' ? 'Vimeo'
+              : 'Spotify (' + det.clase + ')';
+            mEl.textContent = '✓ Reproductor de ' + nombre + ' — se mostrará arriba del artículo';
+            mEl.className = 'contador';
+            mEl.style.color = 'var(--ok)';
+          } else {
+            mEl.textContent = '⚠ No reconozco ese enlace. Usa una URL de YouTube, Spotify o Vimeo.';
+            mEl.className = 'contador pasa';
+            mEl.style.color = '';
+          }
+        }
       }
 
       function previews() {
@@ -364,9 +391,131 @@
         im.src = src;
       }
 
-      ['eTitulo', 'eExtracto', 'eCat', 'eAutor', 'eDur', 'eGlyph'].forEach(function (fid) {
+      /* ---- dónde aparecerá: cruza el artículo con las reglas de la portada ---- */
+      function calcularUbicacion() {
+        var zona = $('#eUbicacion');
+        var estado = $('#eEstado') ? $('#eEstado').value : a.estado;
+        var tipo = $('#eTipo').value;
+        var fechaVal = $('#eFecha').value ? new Date($('#eFecha').value) : new Date();
+        var parrafos = $('#eCuerpo').value.split(/\n\s*\n/).filter(function (p) { return p.trim(); }).length;
+
+        function fila(txt, tono) {
+          var col = tono === 'no' ? 'var(--ink-3)' : tono === 'cur' ? 'var(--acc-text)' : 'var(--ok)';
+          var punto = tono === 'no' ? '○' : '●';
+          return '<p style="margin:0 0 7px;font-size:13px;display:flex;gap:8px;align-items:flex-start">' +
+            '<span style="color:' + col + ';flex:0 0 auto">' + punto + '</span>' +
+            '<span style="color:' + (tono === 'no' ? 'var(--ink-3)' : 'var(--ink)') + '">' + txt + '</span></p>';
+        }
+
+        if (estado === 'borrador') {
+          zona.innerHTML = fila('<b>No aparece en el sitio.</b> Es un borrador: solo tú lo ves.', 'no') +
+            fila('Cambia el estado a <b>Publicado</b> para que entre a la portada.', 'no');
+          return;
+        }
+        if (fechaVal.getTime() > Date.now()) {
+          zona.innerHTML = fila('<b>Programado.</b> Aparecerá automáticamente el ' +
+            fechaVal.toLocaleString('es', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) + '.', 'cur');
+          return;
+        }
+
+        var html = '';
+        /* zonas automáticas */
+        if (tipo === 'short') {
+          html += fila('<b>Shorts</b> — entra solo si es de los 5 más recientes.');
+        } else {
+          html += fila('<b>Lo último</b> — entra solo si es de los más recientes.');
+          if (tipo === 'video') html += fila('<b>Vídeos</b> — aparece en la lista del bloque negro.');
+          if (tipo === 'articulo' && parrafos >= 3) html += fila('<b>Grandes lecturas</b> — tiene ' + parrafos + ' párrafos (mínimo 3).');
+          if (tipo === 'articulo' && parrafos < 3) html += fila('<b>Grandes lecturas</b> — necesita 3 párrafos; hoy tiene ' + parrafos + '.', 'no');
+        }
+        html += fila('<b>Su sección</b> — siempre visible en la página de ' + (catNombre[$('#eCat').value] || 'su categoría') + '.');
+        html += fila('<b>Lecturas destacadas</b> — si llega a ser de los 6 más leídos.', 'no');
+
+        /* zonas curadas: ¿está elegido en algún hueco? */
+        if (a.id && PORTADA) {
+          var nombres = { hero: 'Hero (carrusel)', banda: 'Banda destacada', feature1: 'Feature XL 1',
+            feature2: 'Feature XL 2', rail1: 'Rail temático 1', rail2: 'Rail temático 2',
+            minis: 'Fila mini', lecturas: 'Lecturas destacadas (tarjeta)' };
+          var puesto = [];
+          ['hero', 'banda', 'feature1', 'feature2', 'rail1', 'rail2', 'minis'].forEach(function (k) {
+            var s = PORTADA[k] && PORTADA[k].slots;
+            if (s && s.indexOf(a.id) >= 0) puesto.push(nombres[k] + ' · hueco ' + (s.indexOf(a.id) + 1));
+          });
+          if (PORTADA.lecturas && PORTADA.lecturas.tarjetas && PORTADA.lecturas.tarjetas.indexOf(a.id) >= 0) {
+            puesto.push(nombres.lecturas);
+          }
+          if (PORTADA.videos) {
+            if (PORTADA.videos.destacado === a.id) puesto.push('Vídeo destacado');
+            if (PORTADA.videos.banner === a.id) puesto.push('Banner de vídeos');
+          }
+          puesto.forEach(function (p) { html += fila('<b>' + p + '</b> — elegido a mano.', 'cur'); });
+          if (!puesto.length) {
+            html += fila('No está elegido en ninguna zona destacada. Ve a <b>Portada</b> para ponerlo en el hero o un rail.', 'no');
+          }
+        } else if (!a.id) {
+          html += fila('Guarda el artículo para poder elegirlo en las zonas destacadas.', 'no');
+        }
+        zona.innerHTML = html;
+      }
+
+      /* ---- vista previa del artículo completo ---- */
+      function verCompleta() {
+        var cuerpo = $('#eCuerpo').value.split(/\n\s*\n/).map(function (p) { return p.trim(); }).filter(Boolean);
+        var det = S.detectarMedia($('#eMedia').value.trim());
+        function bloque(p) {
+          var e = esc(p);
+          e = e.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+          if (p.indexOf('## ') === 0) return '<h2 style="font-size:24px;font-weight:800;margin:1.3em 0 .5em">' + esc(p.slice(3)) + '</h2>';
+          if (p.indexOf('> ') === 0) return '<blockquote style="border-left:4px solid #ff0a3c;padding:.4em 0 .4em 1em;margin:1.3em 0;font-size:19px;font-weight:700">' + esc(p.slice(2)) + '</blockquote>';
+          if (p.indexOf('!img:') === 0) {
+            var pt = p.slice(5).split('|');
+            return '<figure style="margin:1.4em 0"><img src="' + esc(pt[0].trim()) + '" style="width:100%;border-radius:12px">' +
+              (pt[1] ? '<figcaption style="font-size:12.5px;color:#8f8fa0;font-style:italic;margin-top:7px">' + esc(pt[1]) + '</figcaption>' : '') + '</figure>';
+          }
+          if (p.indexOf('!yt:') === 0) return '<div style="background:#111;color:#fff;border-radius:12px;padding:30px;text-align:center;margin:1.4em 0">▶ Vídeo de YouTube</div>';
+          return '<p style="margin:0 0 1.2em">' + e + '</p>';
+        }
+        var cabecera = det
+          ? '<div style="background:#111;color:#fff;border-radius:14px;padding:44px;text-align:center;margin-bottom:1.4em">▶ Reproductor de ' +
+            (det.tipo === 'youtube' ? 'YouTube' : det.tipo === 'vimeo' ? 'Vimeo' : 'Spotify') + '</div>'
+          : (img ? '<img src="' + esc(img) + '" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:14px;margin-bottom:1.4em">'
+                 : '<div class="' + (art || 'g8') + '" style="aspect-ratio:16/9;border-radius:14px;margin-bottom:1.4em"></div>');
+
+        var ov = document.createElement('div');
+        ov.style.cssText = 'position:fixed;inset:0;background:rgba(23,23,28,.6);z-index:90;overflow:auto;padding:24px';
+        ov.innerHTML =
+          '<div style="background:#fff;max-width:760px;margin:0 auto;border-radius:16px;overflow:hidden">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid #e6e6ec;position:sticky;top:0;background:#fff">' +
+          '<b style="font-size:14px">Así se verá publicado</b>' +
+          '<button id="pvCerrar" class="btn-mini">Cerrar</button></div>' +
+          '<div style="padding:34px 40px 44px;font-family:Archivo,sans-serif">' +
+          '<span style="display:inline-block;background:#ff0a3c;color:#fff;font-size:11px;font-weight:800;' +
+          'letter-spacing:.05em;text-transform:uppercase;padding:5px 13px;border-radius:999px;margin-bottom:16px">' +
+          esc(catNombre[$('#eCat').value] || '') + '</span>' +
+          '<h1 style="font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1.07;margin:0 0 16px">' +
+          esc($('#eTitulo').value || 'Título del artículo') + '</h1>' +
+          '<p style="font-size:14.5px;color:#5c5c6b;padding-bottom:18px;margin:0 0 22px;border-bottom:1px solid #e6e6ec">Por <b>' +
+          esc(autNombre[$('#eAutor').value] || '') + '</b> · hoy' +
+          ($('#eDur').value ? ' · ' + esc($('#eDur').value) : '') + '</p>' +
+          cabecera +
+          '<div style="font-size:18px;line-height:1.65;color:#2b2b2b">' +
+          (cuerpo.length ? cuerpo.map(bloque).join('') : '<p style="color:#8f8fa0">Sin cuerpo todavía.</p>') +
+          '</div></div></div>';
+        document.body.appendChild(ov);
+        ov.addEventListener('click', function (e) {
+          if (e.target === ov || e.target.id === 'pvCerrar') ov.remove();
+        });
+      }
+      $('#eVerCompleta').addEventListener('click', verCompleta);
+
+      ['eTitulo', 'eExtracto', 'eCat', 'eAutor', 'eDur', 'eGlyph', 'eMedia'].forEach(function (fid) {
         $('#' + fid).addEventListener('input', previews);
       });
+      ['eEstado', 'eTipo', 'eFecha', 'eCuerpo', 'eCat'].forEach(function (fid) {
+        $('#' + fid).addEventListener('input', calcularUbicacion);
+        $('#' + fid).addEventListener('change', calcularUbicacion);
+      });
+      calcularUbicacion();
       previews();
 
       /* barra de formato: inserta sintaxis en el cursor del cuerpo */
@@ -448,6 +597,7 @@
           tipo: $('#eTipo').value, estado: $('#eEstado').value,
           titulo: $('#eTitulo').value.trim(), categoria: $('#eCat').value, autor: $('#eAutor').value,
           duracion: $('#eDur').value.trim() || undefined,
+          media: $('#eMedia').value.trim() || undefined,
           extracto: $('#eExtracto').value.trim(),
           cuerpo: $('#eCuerpo').value.split(/\n\s*\n/).map(function (p) { return p.trim(); }).filter(Boolean),
           img: img || undefined,
@@ -746,6 +896,8 @@
             return '<option' + (p.color === c ? ' selected' : '') + '>' + c + '</option>';
           }).join('') + '</select></label>' +
           '<label class="fld"><span>Glifo</span><input id="prGlyph" maxlength="4" value="' + esc(p.glyph || '') + '"></label></div>' +
+          '<label class="fld"><span>Enlace del programa <span class="hint">(Spotify, YouTube o el que uses)</span></span>' +
+          '<input id="prUrl" value="' + esc(p.url || '') + '" placeholder="https://open.spotify.com/show/…"></label>' +
           '<div style="display:flex;gap:10px"><button class="btn-acc" id="prGuardar">Guardar</button>' +
           '<button class="btn-ghost" id="prCancelar">Cancelar</button></div></div>';
         $('#prCancelar').addEventListener('click', function () { zona.hidden = true; });
@@ -755,7 +907,9 @@
           S.guardarPrograma({
             id: p.id, nombre: nombre, host: $('#prHost').value.trim(),
             color: $('#prColor').value, art: p.art || 'g' + (1 + Math.floor(Math.random() * 12)),
-            glyph: $('#prGlyph').value.trim()
+            glyph: $('#prGlyph').value.trim(),
+            url: $('#prUrl').value.trim() || undefined,
+            img: p.img, credito: p.credito
           }).then(function () { toast('Programa guardado'); vProgramas(); });
         });
       }
