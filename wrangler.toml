@@ -1,10 +1,15 @@
-# CERO25 — despliegue en Cloudflare Workers (assets estáticos)
+# CERO25 — despliegue en Cloudflare Workers
+# Assets estáticos + un worker mínimo que genera /sitemap.xml en vivo.
 # Comandos:  npx wrangler@latest login   →   npx wrangler@latest deploy
 
 name = "cero25"
+main = "worker.js"
 compatibility_date = "2026-09-02"
 
 [assets]
 directory = "./public"
+binding = "ASSETS"
 # usa nuestro 404.html de marca para rutas inexistentes
 not_found_handling = "404-page"
+# el sitemap se genera en el worker; todo lo demás va directo a assets
+run_worker_first = ["/sitemap.xml"]

@@ -22,9 +22,32 @@
 
     var SupabaseDriver = {
       getAll: function (col) {
-        return sb.from(TABLAS[col]).select('*').then(function (r) {
-          if (r.error) throw r.error;
-          return r.data || [];
+        /* Supabase corta cada consulta en 1000 filas: se pagina para que
+           el archivo nunca se trunque en silencio cuando el sitio crezca */
+        var PAG = 1000;
+        function pagina(desde, acc) {
+          return sb.from(TABLAS[col]).select('*').range(desde, desde + PAG - 1)
+            .then(function (r) {
+              if (r.error) throw r.error;
+              var filas = r.data || [];
+              acc = acc.concat(filas);
+              return filas.length < PAG ? acc : pagina(desde + PAG, acc);
+            });
+        }
+        return pagina(0, []);
+      },
+      /* alta del boletín sin leer la tabla: RLS oculta los correos a anónimos,
+         así que el duplicado lo detecta la restricción única de la base */
+      suscribir: function (email) {
+        return sb.from('suscriptores').insert({
+          id: 'sub' + Date.now().toString(36),
+          email: email, fecha: new Date().toISOString()
+        }).then(function (r) {
+          if (r.error) {
+            if (String(r.error.code) === '23505') return { ya: true };
+            throw r.error;
+          }
+          return { ok: true };
         });
       },
       upsert: function (col, item) {

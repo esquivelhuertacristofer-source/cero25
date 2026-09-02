@@ -309,6 +309,10 @@
 
     /* --- boletín (demo: se guarda en el store; producción: tabla) --- */
     suscribir: function (email) {
+      email = String(email || '').trim().toLowerCase();
+      /* en producción el anónimo no puede LEER suscriptores (privacidad),
+         así que la deduplicación vive en el driver / la base */
+      if (driver.suscribir) return driver.suscribir(email);
       return driver.getAll('suscriptores').then(function (subs) {
         if (subs.some(function (s) { return s.email === email; })) return { ya: true };
         return driver.upsert('suscriptores', { id: 'sub' + Date.now().toString(36), email: email, fecha: new Date().toISOString() });

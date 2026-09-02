@@ -216,6 +216,10 @@ window.initRingerUI = function () {
         msg.hidden = false;
         msg.textContent = r && r.ya ? 'Ese correo ya estaba suscrito.' : '¡Listo! Bienvenido al Boletín.';
         input.value = '';
+      }).catch(function () {
+        /* fallo de red o de base: decirlo, no tragárselo */
+        msg.hidden = false;
+        msg.textContent = 'No pudimos registrarte. Inténtalo de nuevo en un momento.';
       });
     });
   }
